@@ -147,7 +147,10 @@
 								"exec": [
 									"pm.test('Status code is 400', function () {\r",
 									"    pm.response.to.have.status(400); \r",
-									"});"
+									"});\r",
+									"\r",
+									"var player_list=pm.response.json().data.players;\r",
+									"pm.environment.set('player_id', player_list[Math.floor(Math.random() * player_list.length)].id);"
 								],
 								"type": "text/javascript"
 							}
@@ -186,7 +189,11 @@
 							"script": {
 								"id": "0b4fc427-8cee-4770-8b85-23b85deaf5b3",
 								"exec": [
-									""
+									"pm.test('Status code is 200', function () {\r",
+									"    pm.response.to.have.status(200); \r",
+									"})\r",
+									"\r",
+									"if(pm.response.json().data.played<750) postman.setNextRequest('Get all players');"
 								],
 								"type": "text/javascript"
 							}
@@ -196,7 +203,7 @@
 							"script": {
 								"id": "5e1add4c-7db0-454d-bc44-d15531cb7b47",
 								"exec": [
-									""
+									"if(!pm.variables.get('player_id')) pm.variables.set('player_id', -1);"
 								],
 								"type": "text/javascript"
 							}
@@ -206,14 +213,21 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{mock_url}}/player",
+							"raw": "{{mock_url}}/player?id={{player_id}}",
 							"host": [
 								"{{mock_url}}"
 							],
 							"path": [
 								"player"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{player_id}}"
+								}
 							]
-						}
+						},
+						"description": "Get a specific player by passing the player ID as a query parameter.\r\n\r\n* User the parameter ´id´"
 					},
 					"response": []
 				},
@@ -225,7 +239,14 @@
 							"script": {
 								"id": "0f0cbbcc-75ba-48a8-a516-0a8034fd710f",
 								"exec": [
-									""
+									"pm.test('Status code is 200', function () {\r",
+									"    pm.response.to.have.status(200); \r",
+									"});\r",
+									"\r",
+									"pm.test('Stats include all fields', function () {\r",
+									"    var jsonData = pm.response.json().data;\r",
+									"    pm.expect(jsonData).to.have.all.keys('won', 'lost', 'drew');\r",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -260,6 +281,12 @@
 							"script": {
 								"id": "468c962e-1e21-4909-bd30-ef985decd372",
 								"exec": [
+									"if(!pm.environment.get('responseData')) {\r",
+									"    var response=pm.response.json();\r",
+									"    pm.environment.set('responseData', response.rand);\r",
+									"    postman.setNextRequest('Skill check');\r",
+									"}\r",
+									"\r",
 									""
 								],
 								"type": "text/javascript"
@@ -267,10 +294,7 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "user-id",
@@ -291,8 +315,17 @@
 								"description": "plz don't edit or remove this header"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Fernando Ramirez Moreno\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "postman-skill-checker.glitch.me/skills",
+							"raw": "postman-skill-checker.glitch.me/skills?email={{email_key}}",
 							"host": [
 								"postman-skill-checker",
 								"glitch",
@@ -300,6 +333,12 @@
 							],
 							"path": [
 								"skills"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{email_key}}"
+								}
 							]
 						},
 						"description": "Hit **Send**, complete each requirement and keep sending until you get a success response!"
@@ -500,13 +539,13 @@
 		"type": "apikey",
 		"apikey": [
 			{
-				"key": "key",
-				"value": "match_key",
+				"key": "value",
+				"value": "{{email_key}}",
 				"type": "string"
 			},
 			{
-				"key": "value",
-				"value": "{{email_key}}",
+				"key": "key",
+				"value": "match_key",
 				"type": "string"
 			}
 		]
@@ -646,16 +685,19 @@
 	],
 	"variable": [
 		{
-			"id": "b29feab7-3ddc-42c8-b974-318f3d94b20e",
+			"id": "66877386-4557-409d-84ec-d147e0f1c751",
 			"key": "mock_url",
-			"value": "https://d78ddda7-4a57-40b3-badf-fa500035e260.mock.pstmn.io",
-			"type": "string"
+			"value": "https://d78ddda7-4a57-40b3-badf-fa500035e260.mock.pstmn.io"
 		},
 		{
-			"id": "bce5d470-64ca-4d63-bdcb-d7843d09cc17",
+			"id": "df6d762b-8107-43b2-bcac-ec3ba3cb9be0",
 			"key": "userId",
-			"value": "",
-			"type": "string"
+			"value": ""
+		},
+		{
+			"id": "d6755cbf-c883-478d-8a79-4f24a56281f4",
+			"key": "skilled",
+			"value": ""
 		}
 	],
 	"protocolProfileBehavior": {}
